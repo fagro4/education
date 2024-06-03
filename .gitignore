@@ -1,0 +1,17 @@
+vendor/
+phpunit.xml.bak
+.phpunit.result.cache
+.phpunit.cache/
+/.idea/.gitignore
+/.idea/dictionaries
+/.idea/education-otus.iml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml
+/composer.json
+/composer.lock
+/app/Exceptions/InvalidArgumentException.php
+/phpunit.xml
+/app/QuadraticFormulaCalc.php
+/tests/QuadraticFormulaCalcTest.php
