@@ -1,7 +1,4 @@
-/.idea/.gitignore
-/.idea/dictionaries
-/.idea/education-otus.iml
-/.idea/modules.xml
-/.idea/php.xml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/vcs.xml
+vendor/
+phpunit.xml.bak
+.phpunit.result.cache
+.phpunit.cache/
