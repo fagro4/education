@@ -11,6 +11,9 @@ use PHPUnit\Framework\TestCase;
 
 final class RotateCommandTest extends TestCase
 {
+    /**
+     * @throws \PHPUnit\Framework\MockObject\Exception
+     */
     public function testRotateCommandChangeDirection()
     {
         /** @var Rotatable&MockObject $rotatableMock */
@@ -20,13 +23,16 @@ final class RotateCommandTest extends TestCase
 
         $testcase = $this;
         $rotatableMock->method('setDirection')->willReturnCallback(function (Direction $newDirection) use ($testcase) {
-            $testcase->assertEquals($newDirection->getDirection(), 1, 'Ошибка вращения объекта');
+            $testcase->assertEquals(1, $newDirection->getDirection(), 'Ошибка вращения объекта');
         });
 
         $rotateCommand = new RotateCommand($rotatableMock);
         $rotateCommand->execute();
     }
 
+    /**
+     * @throws \PHPUnit\Framework\MockObject\Exception
+     */
     public function testRotateCommandUndefinedDirection()
     {
         /** @var Rotatable&MockObject $rotatableMock */
@@ -39,6 +45,9 @@ final class RotateCommandTest extends TestCase
         $rotateCommand->execute();
     }
 
+    /**
+     * @throws \PHPUnit\Framework\MockObject\Exception
+     */
     public function testRotateCommandUndefinedAngularVelocity()
     {
         /** @var Rotatable&MockObject $rotatableMock */
@@ -51,6 +60,9 @@ final class RotateCommandTest extends TestCase
         $rotateCommand->execute();
     }
 
+    /**
+     * @throws \PHPUnit\Framework\MockObject\Exception
+     */
     public function testRotateCommandCantSetDirection()
     {
         /** @var Rotatable&MockObject $rotatableMock */
