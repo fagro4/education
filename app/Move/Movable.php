@@ -9,4 +9,5 @@ interface Movable
     public function getVelocity(): Vector;
     public function getPosition(): Vector;
     public function setPosition(Vector $vector): void;
+    public function setVelocity(Vector $vector): void;
 }
