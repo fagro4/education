@@ -12,10 +12,15 @@ class AdapterGenerateCommand implements Command
     private string $className;
     private string $interfaceName;
     private string $classDefinition;
+    private string $interface;
 
+    /**
+     * @throws \ReflectionException
+     */
     public function __construct(
-        private string $interface
+        string $interface
     ) {
+        $this->interface = $interface;
         $this->reflection = new ReflectionClass($this->interface);
         $this->className = $this->reflection->getShortName() . "Adapter";
         $this->interfaceName = $this->reflection->getShortName();
