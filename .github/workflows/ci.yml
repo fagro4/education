@@ -1,0 +1,26 @@
+name: PHPUnit
+
+on: [push, pull_request]
+
+jobs:
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring
+          coverage: none
+          tools: phpunit:10, composer:v2
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --no-suggest
+
+      - name: Run Tests
+        run: vendor/bin/phpunit tests --testdox
