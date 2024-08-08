@@ -1,9 +1,12 @@
 <?php
 
+use App\Exceptions\Command\NotFoundException as CommandNotFoundException;
 use App\Exceptions\NotFoundException;
+use App\Interfaces\Command;
 use App\Interfaces\SenderInterface;
 use App\Interfaces\UObject;
 use App\IoC\AdapterGenerateCommand;
+use App\IoC\InterpretCommand;
 use App\IoC\IoC;
 use App\Move\Movable;
 use App\Move\MoveCommand;
@@ -73,6 +76,12 @@ IoC::resolve(
 
 IoC::resolve(
     'IoC.Register',
+    'Command.Interpret',
+    fn (...$attrs) => new InterpretCommand(...$attrs)
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
     'Game.Register',
     function (string $uid, SenderInterface $sender = null) {
         IoC::resolve(
@@ -103,6 +112,14 @@ IoC::resolve(
                 return $gameObjects[$uid];
             }
         )->execute();
+
+        IoC::resolve(
+            'IoC.Register',
+            "Game.$uid.Queue.Send",
+            function (Command $command) use ($sender) {
+                $sender->send($command);
+            }
+        )->execute();
     }
 )->execute();
 
@@ -118,7 +135,7 @@ IoC::resolve(
     function (string $commandCode, ...$attrs) {
         return match ($commandCode) {
             'move' => IoC::resolve('Command.Move', ...$attrs),
-            default => throw new NotFoundException("Команда не определена"),
+            default => throw new CommandNotFoundException("Команда не определена"),
         };
     }
 )->execute();
