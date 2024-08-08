@@ -2,9 +2,12 @@
 
 include(__DIR__ . '/config.php');
 require_once '../../vendor/autoload.php';
+require_once '../Bootstrap.php';
 
 use App\Amqp\MessageAdapter;
 use App\Controllers\ProcessIncomingMessage;
+use App\IoC\IoC;
+use App\Middlewares\AuthMiddleware;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 
@@ -24,6 +27,7 @@ function process_message(\PhpAmqpLib\Message\AMQPMessage $message)
 {
     $incommingMessage = new MessageAdapter($message);
     $controller = new ProcessIncomingMessage();
+    $controller->middleware(new AuthMiddleware(IoC::resolve('JWT')));
     $controller->handle($incommingMessage);
 
     $message->ack();

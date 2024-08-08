@@ -8,4 +8,5 @@ interface IncommingMessage
     public function getGameId(): string;
     public function getObjectId(): string;
     public function getParams(): array;
+    public function getToken(): string;
 }

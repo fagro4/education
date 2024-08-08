@@ -2,16 +2,15 @@
 
 namespace App\Controllers;
 
-use App\Exceptions\NotFoundException;
 use App\Interfaces\Command;
 use App\Interfaces\Controller;
 use App\Interfaces\IncommingMessage;
 use App\Interfaces\SenderInterface;
 use App\IoC\IoC;
 
-class ProcessIncomingMessage implements Controller
+class ProcessIncomingMessage extends BaseController implements Controller
 {
-    public function handle(IncommingMessage $message): void
+    public function handleInternal(IncommingMessage $message): void
     {
         /** @var SenderInterface $gameSender */
         $gameSender = IoC::resolve(

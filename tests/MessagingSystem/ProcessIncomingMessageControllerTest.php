@@ -9,13 +9,14 @@ use App\Controllers\ProcessIncomingMessage;
 use App\Exceptions\Command\NotFoundException as CommandNotFoundException;
 use App\Exceptions\Game\Object\NotFoundException as ObjectNotFoundException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\PermissionDenied;
 use App\Interfaces\Command;
 use App\Interfaces\IncommingMessage;
+use App\Interfaces\MiddlewareChain;
 use App\Interfaces\SenderInterface;
 use App\IoC\IoC;
 use App\Move\Movable;
 use App\Thread\SoftStopThreadCommand;
-use App\Thread\StopThreadCommand;
 use App\Thread\Thread;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -87,6 +88,23 @@ final class ProcessIncomingMessageControllerTest extends TestCase
         $controller = new ProcessIncomingMessage;
         $controller->handle($message);
         $this->proccessGame();
+    }
+
+    public function testBreakByMiddleware()
+    {
+        /** @var MiddlewareChain&MockObject $middleware */
+        $middleware = $this->createMock(MiddlewareChain::class);
+        $middleware->method('handle')->willThrowException(new PermissionDenied);
+
+        /** @var IncommingMessage&MockObject $message */
+        $message = $this->createMock(IncommingMessage::class);
+
+        $controller = new ProcessIncomingMessage;
+        $controller->middleware($middleware);
+
+        $this->expectException(PermissionDenied::class);
+
+        $controller->handle($message);
     }
 
     private function proccessGame()

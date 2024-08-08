@@ -8,6 +8,7 @@ use App\Interfaces\UObject;
 use App\IoC\AdapterGenerateCommand;
 use App\IoC\InterpretCommand;
 use App\IoC\IoC;
+use App\JWT\RS256;
 use App\Move\Movable;
 use App\Move\MoveCommand;
 use App\Queue\Async\AwaitCommand;
@@ -83,7 +84,7 @@ IoC::resolve(
 IoC::resolve(
     'IoC.Register',
     'Game.Register',
-    function (string $uid, SenderInterface $sender = null) {
+    function (string $uid, SenderInterface $sender = null, $players = []) {
         IoC::resolve(
             'IoC.Register',
             "Game.$uid",
@@ -95,6 +96,13 @@ IoC::resolve(
             'IoC.Register',
             "Game.$uid.Objects",
             fn () => $gameObjects
+        )->execute();
+
+
+        IoC::resolve(
+            'IoC.Register',
+            "Game.$uid.Players",
+            fn () => $players
         )->execute();
 
         IoC::resolve(
@@ -145,5 +153,25 @@ IoC::resolve(
     'Command.Move',
     function (Movable $object) {
         return new MoveCommand($object);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'JWT',
+    function () {
+        $publicKey = <<<EOD
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuzWHNM5f+amCjQztc5QT
+fJfzCC5J4nuW+L/aOxZ4f8J3FrewM2c/dufrnmedsApb0By7WhaHlcqCh/ScAPyJ
+hzkPYLae7bTVro3hok0zDITR8F6SJGL42JAEUk+ILkPI+DONM0+3vzk6Kvfe548t
+u4czCuqU8BGVOlnp6IqBHhAswNMM78pos/2z0CjPM4tbeXqSTTbNkXRboxjU29vS
+opcT51koWOgiTf3C7nJUoMWZHZI5HqnIhPAG9yv8HAgNk6CMk2CadVHDo4IxjxTz
+TTqo1SCSH2pooJl9O8at6kkRYsrZWwsKlOFE2LUce7ObnXsYihStBUDoeBQlGG/B
+wQIDAQAB
+-----END PUBLIC KEY-----
+EOD;
+
+        return new RS256($publicKey);
     }
 )->execute();

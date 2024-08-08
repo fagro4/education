@@ -41,6 +41,14 @@ class MessageAdapter implements IncommingMessage
         return $this->data->object;
     }
 
+    public function getToken(): string
+    {
+        if (empty($this->data->token))
+            throw new IncommingMessageException("Не указан Токен авторизации");
+
+        return $this->data->token;
+    }
+
     public function getParams(): array
     {
         return $this->data->params ?? [];
