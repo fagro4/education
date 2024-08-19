@@ -12,6 +12,7 @@ use App\Interfaces\SenderInterface;
 use App\Interfaces\State;
 use App\Interfaces\ThreadInterface;
 use App\Interfaces\UObject;
+use App\Interfaces\UserContextInterface;
 use App\IoC\AdapterGenerateCommand;
 use App\IoC\InterpretCommand;
 use App\IoC\IoC;
@@ -105,6 +106,7 @@ IoC::resolve(
         )->execute();
 
         $gameObjects = [];
+        $playerObjects = [];
         IoC::resolve(
             'IoC.Register',
             "Game.$uid.Objects",
@@ -121,8 +123,19 @@ IoC::resolve(
         IoC::resolve(
             'IoC.Register',
             "Game.$uid.Objects.Register",
-            function (string $uid, mixed $object) use (&$gameObjects) {
+            function (string $uid, mixed $object, UserContextInterface $userContext = null) use (&$gameObjects, &$playerObjects) {
                 $gameObjects[$uid] = $object;
+                if ($userContext !== null) {
+                    $playerObjects[$uid] = $userContext->getLogin();
+                }
+            }
+        )->execute();
+
+        IoC::resolve(
+            'IoC.Register',
+            "Game.$uid.Objects.CheckAccess",
+            function (string $uid, UserContextInterface $userContext) use (&$playerObjects) {
+                return $playerObjects[$uid] === $userContext->getLogin();
             }
         )->execute();
 
@@ -340,5 +353,31 @@ IoC::resolve(
     'Thread.State.Default',
     function (ThreadInterface $thread, ReceiverInterface $receiver) {
         return new DefaultState($thread, $receiver);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Action.Factory.Get',
+    function (string $commandCode, ...$attrs) {
+        return IoC::resolve($commandCode, ...$attrs);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'StartMove',
+    function (Movable $object, int $initialVelocity) {
+        $object->setVelocity(new Vector($initialVelocity, 0));
+        (new MoveCommand($object))->execute();
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'StopMove',
+    function (Movable $object) {
+        $object->setVelocity(new Vector(0, 0));
+        (new MoveCommand($object))->execute();
     }
 )->execute();
