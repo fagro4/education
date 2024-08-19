@@ -24,7 +24,7 @@ final class DefineObjectCellCommandTest extends TestCase
     public function testDefineCell()
     {
         $gridKey = 'BASE';
-        $objectUid = "2";
+        $objectUid = "1";
 
         /** @var Movable&MockObject $movableMock */
         $movableMock = $this->createMock(Movable::class);
@@ -43,7 +43,7 @@ final class DefineObjectCellCommandTest extends TestCase
 
     public function testObjectOutOfField()
     {
-        $gridKey = 'BASE';
+        $gridKey = 'TEST';
         $objectUid = "2";
 
         /** @var Movable&MockObject $movableMock */
