@@ -7,7 +7,10 @@ use App\Field\DefineObjectCellCommand;
 use App\Field\GenerateGridCommand;
 use App\Field\HandleHitInCellCommand;
 use App\Interfaces\Command;
+use App\Interfaces\ReceiverInterface;
 use App\Interfaces\SenderInterface;
+use App\Interfaces\State;
+use App\Interfaces\ThreadInterface;
 use App\Interfaces\UObject;
 use App\IoC\AdapterGenerateCommand;
 use App\IoC\InterpretCommand;
@@ -22,9 +25,13 @@ use App\Queue\Receiver;
 use App\Queue\Sender;
 use App\Thread\Action\DefaultStrategy;
 use App\Thread\StartThreadCommand;
+use App\Thread\State\DefaultState;
+use App\Thread\State\MoveToState;
+use App\Thread\State\Thread as StateThread;
 use App\Thread\StopThreadCommand;
 use App\Thread\Thread;
 use App\Vector;
+use Ds\Map;
 
 IoC::resolve(
     'IoC.Register',
@@ -215,7 +222,7 @@ IoC::resolve(
 IoC::resolve(
     'IoC.Register',
     'Game.Grid.Keys',
-    function() use (&$gridKeys) {
+    function () use (&$gridKeys) {
         return $gridKeys;
     }
 )->execute();
@@ -293,5 +300,45 @@ IoC::resolve(
     'Command.Create.CompareObjects',
     function (...$attrs) {
         return new CompareObjectsCommand(...$attrs);
+    }
+)->execute();
+
+$threadState = new Map([]);
+
+IoC::resolve(
+    'IoC.Register',
+    'Thread.State.Create',
+    fn () => new StateThread
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Thread.State.Set',
+    function (ThreadInterface $thread, State $state) use (&$threadState) {
+        $threadState[$thread] = $state;
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Thread.State.Get',
+    function (ThreadInterface $thread) use (&$threadState) {
+        return $threadState[$thread];
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Thread.State.MoveTo',
+    function (ThreadInterface $thread, ReceiverInterface $receiver) {
+        return new MoveToState($thread, $receiver);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Thread.State.Default',
+    function (ThreadInterface $thread, ReceiverInterface $receiver) {
+        return new DefaultState($thread, $receiver);
     }
 )->execute();
