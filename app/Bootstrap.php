@@ -1,7 +1,11 @@
 <?php
 
+use App\Collision\CheckCollisionCommand;
 use App\Exceptions\Command\NotFoundException as CommandNotFoundException;
-use App\Exceptions\NotFoundException;
+use App\Field\CompareObjectsCommand;
+use App\Field\DefineObjectCellCommand;
+use App\Field\GenerateGridCommand;
+use App\Field\HandleHitInCellCommand;
 use App\Interfaces\Command;
 use App\Interfaces\SenderInterface;
 use App\Interfaces\UObject;
@@ -9,6 +13,7 @@ use App\IoC\AdapterGenerateCommand;
 use App\IoC\InterpretCommand;
 use App\IoC\IoC;
 use App\JWT\RS256;
+use App\MacroCommand;
 use App\Move\Movable;
 use App\Move\MoveCommand;
 use App\Queue\Async\AwaitCommand;
@@ -19,6 +24,7 @@ use App\Thread\Action\DefaultStrategy;
 use App\Thread\StartThreadCommand;
 use App\Thread\StopThreadCommand;
 use App\Thread\Thread;
+use App\Vector;
 
 IoC::resolve(
     'IoC.Register',
@@ -173,5 +179,119 @@ wQIDAQAB
 EOD;
 
         return new RS256($publicKey);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Field.Size',
+    fn () => [1024, 768]
+)->execute();
+
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Field.Size',
+    fn () => [1024, 768]
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Field.Cell.Size',
+    fn () => [128, 128]
+)->execute();
+
+$gridKeys = [];
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Grid.Generate',
+    function (string $gameUid, string $key, int $offsetX = 0, int $offsetY = 0) use (&$gridKeys) {
+        $gridKeys[] = $key;
+        (new GenerateGridCommand($gameUid, $key, $offsetX, $offsetY))->execute();
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Grid.Keys',
+    function() use (&$gridKeys) {
+        return $gridKeys;
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Object.Cell.Get',
+    function (string $gameUid,  string $gridKey, string $objectId) {
+        try {
+            return IoC::resolve("Game." . $gameUid . "." . $gridKey . '.' . $objectId . ".Cell");
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Object.Cell.Set',
+    function (string $gameUid, string $gridKey, string $objectId, ?int $cell) {
+        IoC::resolve(
+            'IoC.Register',
+            "Game." . $gameUid . "." . $gridKey . '.' . $objectId . ".Cell",
+            fn () => $cell
+        )->execute();
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Game.Cell.Objects.Append',
+    function (string $gameUid, string $gridKey, int $cell, string $objectId) {
+        IoC::resolve(
+            'IoC.Register',
+            "Game." . $gameUid . "." . $gridKey . '.' . $objectId . ".Cell",
+            fn () => $cell
+        )->execute();
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Command.Create.CheckCollision',
+    function (Movable $targetObject, Movable $object) {
+        return new CheckCollisionCommand($targetObject, $object);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Command.Create.Macro',
+    function (...$command) {
+        return new MacroCommand(...$command);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Command.Create.DefineObjectCell',
+    function (...$attrs) {
+        return new DefineObjectCellCommand(...$attrs);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Command.Create.HandleHitInCell',
+    function (...$attrs) {
+        return new HandleHitInCellCommand(...$attrs);
+    }
+)->execute();
+
+IoC::resolve(
+    'IoC.Register',
+    'Command.Create.CompareObjects',
+    function (...$attrs) {
+        return new CompareObjectsCommand(...$attrs);
     }
 )->execute();
